@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Haunting: Blackwood Manor</title>
+<style>
+:root{--red:#b52c35;--gold:#c7a66a;--ink:#090a0d;--panel:#14151a;--muted:#a6a0a0}
+*{box-sizing:border-box}
+body{margin:0;background:#07080b;color:#eee;font-family:Georgia,'Times New Roman',serif;min-height:100vh}
+button{font:inherit;cursor:pointer}
+#game{max-width:1120px;margin:auto;min-height:100vh;padding:22px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #393238;padding:4px 0 16px}
+.brand{letter-spacing:.22em;font-size:12px;color:var(--gold)}
+header small{color:var(--muted);letter-spacing:.12em}
+h1{font-size:clamp(27px,5vw,48px);letter-spacing:.12em;margin:8px 0 4px;text-shadow:0 0 18px #8b202b}
+.subtitle{color:#aaa;font-style:italic;margin:0 0 18px}
+.layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(250px,.8fr);gap:18px}
+.scene{position:relative;min-height:390px;overflow:hidden;border:1px solid #55434a;border-radius:8px;background:linear-gradient(180deg,#17151a,#090a0d 75%);box-shadow:0 12px 50px #000}
+.scene:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#66504722 0%,#0a090d 70%),linear-gradient(90deg,#0008,transparent 25%,transparent 75%,#0008);pointer-events:none}
+.scene-art{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.92}
+.room-icon{font-size:clamp(90px,17vw,180px);filter:grayscale(1) sepia(.3) drop-shadow(0 0 20px #8c313344);user-select:none}
+.fog{position:absolute;bottom:0;left:-30%;width:160%;height:34%;background:linear-gradient(0deg,#a7a5a511,transparent);filter:blur(18px);animation:fog 9s ease-in-out infinite alternate}
+@keyframes fog{to{transform:translateX(8%);opacity:.35}}
+.vignette{position:absolute;inset:0;box-shadow:inset 0 0 100px 35px #000;pointer-events:none}
+.scene-top{position:absolute;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;gap:8px;color:#d1c2b5;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.scene-bottom{position:absolute;bottom:16px;left:18px;right:18px;text-align:center;color:#e0d7d0;font-size:14px;text-shadow:0 2px 8px #000}
+.panel{background:linear-gradient(145deg,#19171b,#101115);border:1px solid #393238;border-radius:8px;padding:16px}
+.panel h3{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 12px}
+.stat{margin:12px 0}.statline{display:flex;justify-content:space-between;font-size:12px;color:#ccc;margin-bottom:6px}
+.track{height:7px;background:#353039;border-radius:9px;overflow:hidden}.fill{height:100%;transition:width .35s}
+#sanityFill{background:linear-gradient(90deg,#9b252d,#d49a73)}
+#batteryFill{background:linear-gradient(90deg,#8a773c,#e4cf87)}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.tool{border:1px solid #51434a;background:#211e24;color:#eee;padding:10px 8px;border-radius:5px;font-size:12px}
+.tool.active{border-color:var(--gold);background:#3a3025;color:#f1d7a4}
+.inventory{font-size:13px;color:#c9c1c1;line-height:1.7;min-height:42px}
+.log{margin-top:18px;border-top:1px solid #393238;padding-top:14px}
+.log p{margin:7px 0;color:#bcb4b4;font-size:13px;line-height:1.45}
+.log p:first-child{color:#e5d7c9}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+.action{background:#282127;border:1px solid #65515a;color:#eee;padding:11px 15px;border-radius:5px;transition:.15s}
+.action:hover{background:#443039;border-color:#bd8183}
+.action.primary{background:#68252d;border-color:#a84a51}
+.action:disabled{opacity:.35;cursor:not-allowed}
+.message{min-height:54px;margin-top:14px;padding:12px 14px;border-left:3px solid var(--red);background:#171216;color:#e0d4d2;line-height:1.5;font-size:14px}
+.room-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.room-btn{font-size:11px;padding:7px 9px;background:#17171c;color:#aaa;border:1px solid #39343b;border-radius:4px}
+.room-btn.current{color:#f0d6aa;border-color:#a88958}
+.room-btn:disabled{opacity:.3}
+.overlay{position:fixed;inset:0;background:#050507ed;display:flex;align-items:center;justify-content:center;padding:20px;z-index:5}
+.modal{max-width:610px;width:100%;padding:34px;border:1px solid #71545a;background:radial-gradient(ellipse at top,#282027,#0e0e12 70%);text-align:center;border-radius:8px;box-shadow:0 0 90px #000}
+.modal h2{font-size:clamp(30px,6vw,54px);letter-spacing:.12em;margin:0 0 8px;color:#e2d3c5}
+.modal p{color:#c4b9b8;line-height:1.65}
+.modal .warning{color:#d48b8b;font-style:italic}
+.hidden{display:none!important}
+footer{text-align:center;color:#655e62;font-size:11px;letter-spacing:.1em;padding:25px 0 8px}
+@media(max-width:760px){#game{padding:14px}.layout{grid-template-columns:1fr}.scene{min-height:330px}.panel{order:2}header small{display:none}}
+</style>
+</head>
+<body>
+<div id="game">
+<header><div class="brand">NIGHTFALL INTERACTIVE</div><small>FIELD REPORT 0047 · OCTOBER 31</small></header>
+<h1>THE HAUNTING</h1><p class="subtitle">Blackwood Manor — some doors should stay closed.</p>
+<div class="layout">
+ <main>
+  <section class="scene" aria-label="Current haunted room">
+   <div class="scene-art"><div class="room-icon" id="roomIcon">🏚️</div></div><div class="fog"></div><div class="vignette"></div>
+   <div class="scene-top"><span id="roomName">Front Entrance</span><span id="timeLabel">11:47 PM</span></div>
+   <div class="scene-bottom" id="sceneCaption">Rain taps against the broken windows. Something moves upstairs.</div>
+  </section>
+  <div class="message" id="message" aria-live="polite">Your investigation begins. Find evidence of the presence haunting Blackwood Manor, then get out alive.</div>
+  <div class="actions">
+   <button class="action primary" id="searchBtn">🔎 Search room</button>
+   <button class="action" id="listenBtn">👂 Listen</button>
+   <button class="action" id="useBtn">⚡ Use equipment</button>
+   <button class="action" id="hideBtn">🫥 Hide</button>
+  </div>
+  <section class="panel" style="margin-top:16px">
+   <h3>Explore the manor</h3>
+   <div class="room-list" id="roomList"></div>
+  </section>
+ </main>
+ <aside>
+  <section class="panel">
+   <h3>Investigator status</h3>
+   <div class="stat"><div class="statline"><span> SANITY</span><b id="sanityText">100%</b></div><div class="track"><div class="fill" id="sanityFill" style="width:100%"></div></div></div>
+   <div class="stat"><div class="statline"><span>FLASHLIGHT BATTERY</span><b id="batteryText">100%</b></div><div class="track"><div class="fill" id="batteryFill" style="width:100%"></div></div></div>
+   <div class="stat"><div class="statline"><span>GHOST ACTIVITY</span><b id="activityText">LOW</b></div><div class="track"><div class="fill" id="activityFill" style="width:15%;background:#9a5961"></div></div></div>
+   <div class="tools">
+    <button class="tool active" id="flashTool">🔦 Flashlight: ON</button>
+    <button class="tool" id="emfTool">📟 EMF Reader: OFF</button>
+   </div>
+  </section>
+  <section class="panel" style="margin-top:14px">
+   <h3>Evidence collected</h3><div class="inventory" id="evidence">No evidence yet. Search carefully.</div>
+   <div class="log"><h3>Investigation notes</h3><div id="notes"><p>• The Blackwood family vanished in 1923.</p><p>• Locals report a figure near the upstairs nursery.</p><p>• The front door may lock once the haunting begins.</p></div></div>
+  </section>
+ </aside>
+</div>
+<footer>BLACKWOOD MANOR · PARANORMAL FIELD UNIT · DO NOT INVESTIGATE ALONE</footer>
+</div>
+
+<div class="overlay" id="intro">
+ <div class="modal">
+  <div style="font-size:46px">🕯️</div><div class="brand">A PARANORMAL INVESTIGATION</div>
+  <h2>THE HAUNTING</h2><p class="warning">BLACKWOOD MANOR · 11:47 PM</p>
+  <p>You were hired to investigate the abandoned Blackwood estate. The family disappeared a century ago. Neighbors still hear a child singing from the upper floor.</p>
+  <p>Find <b>three pieces of evidence</b>, uncover the truth, and escape. Keep your sanity above zero. The thing in this house knows you're here.</p>
+  <p style="font-size:12px;color:#9d9292">HOW TO PLAY: Search rooms, listen for clues, use your EMF reader, and hide when the ghost gets close. Your flashlight battery is limited.</p>
+  <button class="action primary" id="startBtn" style="font-size:15px;padding:13px 24px">ENTER THE MANOR</button>
+ </div>
+</div>
+<div class="overlay hidden" id="ending">
+ <div class="modal"><div style="font-size:46px" id="endingIcon">🕯️</div><h2 id="endingTitle">CASE CLOSED</h2><p id="endingText"></p><button class="action primary" onclick="location.reload()">PLAY AGAIN</button></div>
+</div>
+
+<script>
+const rooms = [
+ {id:'entrance',name:'Front Entrance',icon:'🏚️',caption:'Rain taps against the broken windows. Something moves upstairs.',desc:'A grand staircase rises into darkness. The front door groans in the wind.',clue:'A muddy handprint appears on the inside of the locked front door.',evidence:'Muddy handprint',risk:8},
+ {id:'parlor',name:'The Parlor',icon:'🕰️',caption:'A stopped clock begins ticking when you step inside.',desc:'Dusty furniture sits beneath a portrait whose eyes seem to follow you.',clue:'Behind the portrait is a family photograph. One face has been scratched away.',evidence:'Defaced family photograph',risk:15},
+ {id:'library',name:'The Library',icon:'📚',caption:'Books lie scattered across the floor. A cold draft stirs the pages.',desc:'The shelves are packed with journals and books about the occult.',clue:'A diary entry reads: “She is not in the grave. She is in the walls.”',evidence:'The missing diary page',risk:19},
+ {id:'kitchen',name:'The Kitchen',icon:'🍽️',caption:'A rotten smell hangs in the air. A cupboard door swings slowly.',desc:'A long-dead fireplace sits beneath a rack of rusted utensils.',clue:'Tiny wet footprints lead from the pantry to a bricked-up doorway.',evidence:'Small wet footprints',risk:14},
+ {id:'nursery',name:'The Nursery',icon:'🧸',caption:'A music box plays a lullaby by itself. The air is freezing.',desc:"A rocking horse moves gently. A child's drawing is pinned to the wall.",clue:'The drawing shows a little girl standing beside a tall, shadowy figure.',evidence:'Child’s drawing',risk:29},
+ {id:'cellar',name:'The Cellar',icon:'🕳️',caption:'Water drips somewhere below. You hear breathing in the dark.',desc:'The stone steps descend to a cellar. Scratches cover the inside of the door.',clue:'You find a locket beside a message carved into the stone: “LET ME OUT.”',evidence:'Silver locket',risk:35}
+];
+let current='entrance',sanity=100,battery=100,activity=15,emf=false,flash=true,found=[],searched=[],turn=0,hidden=false,gameOver=false;
+const $=id=>document.getElementById(id);
+function room(){return rooms.find(r=>r.id===current)}
+function say(t){$('message').textContent=t}
+function note(t){const p=document.createElement('p');p.textContent='• '+t;$('notes').prepend(p)}
+function update(){
+ const r=room();$('roomName').textContent=r.name;$('roomIcon').textContent=r.icon;$('sceneCaption').textContent=r.caption;
+ $('sanityText').textContent=sanity+'%';$('sanityFill').style.width=sanity+'%';
+ $('batteryText').textContent=battery+'%';$('batteryFill').style.width=battery+'%';
+ $('activityText').textContent=activity<30?'LOW':activity<65?'ELEVATED':'DANGEROUS';$('activityFill').style.width=activity+'%';
+ $('activityFill').style.background=activity>65?'#c3333e':'#9a5961';
+ $('evidence').textContent=found.length?found.join(' · '):'No evidence yet. Search carefully.';
+ $('flashTool').textContent='🔦 Flashlight: '+(flash?'ON':'OFF');$('flashTool').classList.toggle('active',flash);
+ $('emfTool').textContent='📟 EMF Reader: '+(emf?'ON':'OFF');$('emfTool').classList.toggle('active',emf);
+ $('searchBtn').disabled=searched.includes(current)||gameOver;
+ $('roomList').innerHTML='';
+ rooms.forEach(r=>{const b=document.createElement('button');b.className='room-btn'+(r.id===current?' current':'');b.textContent=r.name;b.disabled=gameOver||(r.id==='cellar'&&!searched.includes('kitchen'));b.onclick=()=>move(r.id);$('roomList').append(b)});
+}
+function drain(){if(flash)battery=Math.max(0,battery-4);if(battery===0&&flash){flash=false;say('Your flashlight sputters and dies. The darkness feels alive.');sanity=Math.max(0,sanity-5)}}
+function scare(amount,msg){sanity=Math.max(0,sanity-amount);activity=Math.min(100,activity+12);say(msg);if(sanity<=0)end(false)}
+function move(id){
+ if(gameOver)return;const r=rooms.find(x=>x.id===id);if(!r)return;
+ if(id==='cellar'&&!searched.includes('kitchen')){say('The cellar door is jammed. Maybe there is a way to open it in the kitchen.');return}
+ current=id;turn++;hidden=false;drain();activity=Math.min(100,activity+5);
+ if(activity>70&&Math.random()<.42)scare(13,'A dark shape rushes across the room. Your ears ring. Something is hunting you.');
+ else say(r.desc);
+ update();
+}
+function search(){
+ if(gameOver||searched.includes(current))return;
+ const r=room();searched.push(current);turn++;drain();
+ if(current==='kitchen')note('A hidden latch may release the cellar door.');
+ if(current==='entrance'){note('The front entrance is sealed. Find a way out.')}
+ found.push(r.evidence);activity=Math.min(100,activity+r.risk);sanity=Math.max(0,sanity-(r.risk>25?8:2));
+ say(r.clue);note('Evidence found: '+r.evidence+'.');
+ if(current==='cellar'){note('The locket bears the name Eleanor Blackwood.');}
+ if(found.length>=3){say(r.clue+' You have enough evidence to confront the haunting. Find the cellar and uncover the final secret.')}
+ if(current==='cellar'&&found.length>=3){setTimeout(()=>end(true),1200)}
+ if(activity>=75&&!hidden&&Math.random()<.45)scare(18,'THE GHOST IS HERE. A shape unfolds from the corner. You stumble backward.');
+ if(sanity<=0)end(false);update();
+}
+function listen(){
+ if(gameOver)return;turn++;drain();
+ const lines=[
+ 'A child whispers your name from somewhere behind the walls.',
+ 'Three slow knocks answer from the floor beneath you.',
+ 'You hear dragging footsteps overhead. They stop when you stop.',
+ 'A woman hums a lullaby. It sounds like it is coming from inside your head.',
+ 'Silence. Then a breath, right beside your ear.'
+ ];
+ activity=Math.min(100,activity+8);say(lines[Math.floor(Math.random()*lines.length)]);
+ if(activity>65&&!hidden&&Math.random()<.35)scare(12,'The whisper becomes a shriek. Your vision blurs. RUN.');
+ update();
+}
+function useGear(){
+ if(gameOver)return;
+ if(emf){if(activity>35){say('📟 EMF LEVEL 4! A presence is close. The readings spike near the coldest part of the room.');note('EMF detected a strong paranormal reading in '+room().name+'.')}else say('📟 EMF level 1. No clear paranormal signal.');}
+ else if(flash){if(battery>0){say('🔦 Your flashlight beam cuts through the dust. Something glints in the far corner.');battery=Math.max(0,battery-8)}else say('The flashlight battery is dead.');}
+ else say('It is too dark to see. Turn on your flashlight if it has any battery left.');
+ update();
+}
+function hide(){
+ if(gameOver)return;hidden=true;turn++;drain();
+ if(activity>45){activity=Math.max(10,activity-22);say('You crouch behind the furniture and hold your breath. Heavy footsteps pass inches away.')}else say('You hide in the shadows. For a moment, the house is still.');
+ update();
+}
+function end(win){
+ if(gameOver)return;gameOver=true;$('ending').classList.remove('hidden');
+ if(win){$('endingIcon').textContent='🔓';$('endingTitle').textContent='YOU ESCAPED';$('endingText').textContent='At the bottom of the cellar you found Eleanor’s locket and the truth: the family tried to imprison the spirit beneath the house. The cellar door bursts open behind you. You run into the rain with your evidence. Blackwood Manor is quiet… for now.';}
+ else{$('endingIcon').textContent='👁️';$('endingTitle').textContent='LOST TO THE HAUNTING';$('endingText').textContent='Your nerve finally breaks. The flashlight slips from your hand, and the darkness closes in. By morning, the manor is silent again. A new face appears in the upstairs portrait.';}
+}
+$('startBtn').onclick=()=>{$('intro').classList.add('hidden');say('The front door slams shut behind you. The investigation has begun.');update()};
+$('searchBtn').onclick=search;$('listenBtn').onclick=listen;$('useBtn').onclick=useGear;$('hideBtn').onclick=hide;
+$('flashTool').onclick=()=>{if(!flash&&battery===0){say('The flashlight battery is empty.');return}flash=!flash;update();say(flash?'Flashlight switched on. The beam trembles in your hand.':'Flashlight switched off. You listen to the darkness.')};
+$('emfTool').onclick=()=>{emf=!emf;update();say(emf?'EMF reader activated. Watch for spikes in activity.':'EMF reader switched off.')};
+update();
+</script>
+</body>
+</html>
